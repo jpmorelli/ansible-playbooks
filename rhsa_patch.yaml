@@ -1,0 +1,30 @@
+---
+- name: Update 'rhsa_list.txt' with RHSA numbers of package to install
+  hosts: all
+  vars:
+    path: "~/playbooks/patching"
+
+  tasks:
+     - name: List each RHSA to be installed
+       debug: msg=" Security Advisory {{ item }}"
+       loop: "{{ lookup('file', '{{ path }}/rhsa_list.txt').split('\n') }}"
+
+     - name: Exclude openshift docker packages
+       command: "/usr/sbin/atomic-openshift-docker-excluder exclude"
+       become: yes
+       become_user: root
+       when: inventory_hostname == 'master'
+
+     - name: Exclude openshift core packages
+       command: "/usr/sbin/atomic-openshift-excluder exclude"
+       become: yes
+       become_user: root
+       when: inventory_hostname == 'master'
+
+     - name: Install Red Hat Security Advisory (RHSA)
+       command: yum -y update-minimal --advisory {{item}} --exclude=kernel*
+       become: yes
+       become_user: root
+       with_items:
+           - "{{ lookup('file','{{ path }}/rhsa_list.txt').split('\n') }}"
+       

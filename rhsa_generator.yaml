@@ -1,0 +1,51 @@
+---
+- name: Update 'rhsa_list.txt' with RHSA numbers of package to install
+  hosts: all
+  vars:
+    path: "~/playbooks/patching"
+    date: "{{ lookup('pipe', 'date +%Y%m%d') }}"
+
+  tasks:
+    - name: Specifying a path directly
+      ansible.builtin.fetch:
+        src: /home/ansible/rhsa_generate.txt
+        dest: ~/rhsa/rhsa-{{ inventory_hostname }}
+        flat: yes
+
+    - name: get contents of file
+      command: cat /home/ansible/rhsa_generate.txt
+      register: rhsafiles
+      
+    - name: viewing the contents
+      debug:
+        msg: "{{ rhsafiles.stdout_lines }}"
+
+    #- name: create file
+    #  file:
+    #    dest: "~/rhsa_complete_list_{{ date }}.txt"
+    #    state: touch
+    #  delegate_to: localhost
+
+    #- name: Append data to local file
+    #  lineinfile:
+    #    dest: "~/rhsa_complete_list_{{ date }}.txt"
+    #    line: "{{ inventory_hostname }}\n{{ rhsafiles.stdout_lines |join('\n') }}"
+    #    insertafter: EOF
+    #  delegate_to: localhost
+
+    #- name: Send mail with RHSA numbers of package to install
+      #hosts: localhost
+      #vars:
+        #path: "~/playbooks/patching"
+        #date: "{{ lookup('pipe', 'date +%Y%m%d') }}"
+
+    #- mail:
+      #host: localhost
+      #port: 25
+      #subject: Ansible Patching report (SBY)
+        #body: Hello, the following are the security packages pending for OCP SBY servers.
+        #from: hcpadmin@us.ibm.com
+        #to: jpmorell@ar.ibm.com
+        #attach: /home/ansible/rhsa_complete_list_{{ date }}.txt
+        #charset: utf8
+      #delegate_to: localhost

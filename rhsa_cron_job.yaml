@@ -1,0 +1,25 @@
+---
+- name: Update cron of Ansible user to create 'rhsa_generate.txt' file locally with RHSA numbers of packages to install
+  hosts: all
+
+  tasks:
+    - name: Ensure a job that runs at 7:05AM exists. Creates an entry like "5 7 * * 1,3,5 yum updateinfo..."
+      ansible.builtin.cron:
+        name: "Generate rhsa_generate.txt"
+        minute: "5"
+        hour: "7"
+        weekday: "1-5" 
+        job: "yum updateinfo list security 2>/dev/null | awk '/RHSA-[0-9]{4}:[0-9]{4}/ {print $(NF-2)}' | sort -u > ~/rhsa_generate.txt"
+
+    - name: Ensure a job that runs at 7:10AM exists. Creates an entry like "10 7 * * 1,3,5 yum list-security..."
+      ansible.builtin.cron:
+        name: "Add kernel entries if exist to rhsa_generate.txt"
+        minute: "10"
+        hour: "7"
+        weekday: "1-5" 
+        job: "yum list-security --security | awk -F- '/kernel/ {print $2}' | sort -u >> ~/rhsa_generate.txt"
+
+    #- name: Disable job in cron
+    #  ansible.builtin.cron:
+    #    name: "Generate rhsa_generate.txt list"
+    #    state: absent
