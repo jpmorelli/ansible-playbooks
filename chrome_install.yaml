@@ -1,0 +1,27 @@
+---
+- hosts: localhost
+  connection: local
+  become: True
+  vars:
+    - apt_file: /etc/apt/sources.list.d/google-chrome.list
+  tasks:
+    - name: 'Does the Google apt file exist?'
+      command: test -f
+      register: google_apt_exists
+      ignore_errors: True
+        #- name: 'Add Google Chrome key'
+        #shell: wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
+        #wget -qO- https://myrepo.example/myrepo.asc | sudo tee /etc/apt/trusted.gpg.d/myrepo.asc
+        #when: google_apt_exists.rc == 1
+    - name: somerepo |no apt key
+      ansible.builtin.get_url:
+        url: https://dl-ssl.google.com/linux/linux_signing_key.pub
+        dest: /etc/apt/trusted.gpg.d/chrome.asc
+    - name: 'Add Google Chrome repo'
+      copy: content="deb http://dl.google.com/linux/chrome/deb/ stable main" dest='/etc/apt/sources.list.d/google-chrome.list' owner=root group=root mode=644
+        #when: google_apt_exists.rc == 1
+    - name: 'Update apt cache'
+      apt: update_cache=yes
+        #when: google_apt_exists.rc == 1
+    - name: 'Install Google Chrome'
+      apt: pkg=google-chrome-stable state=present

@@ -1,0 +1,87 @@
+---
+- hosts: localhost
+  connection: local
+  become: True
+  tasks:
+    #- name: Agrega repositorio PPA PIPEWIRE
+      #apt_repository:
+      #  validate_certs: no
+      #  repo: 'ppa:pipewire-debian/pipewire-upstream'
+      #  state: present
+    #- name: Agrega repositorio PPA WIREPLUMBER
+      #apt_repository:
+      #  validate_certs: no
+      #  repo: 'ppa:pipewire-debian/wireplumber-upstream'
+      #  state: present
+    - name: Run the equivalent of "apt-get update" as a separate step
+      apt:
+        update_cache: yes
+    - name: Update all packages to the latest version
+      apt:
+        upgrade: dist
+    - name: Install the packages
+      apt:
+        pkg:
+          - libfdk-aac2
+          - libldacbt-abr2
+          - libldacbt-enc2
+          - libopenaptx0
+          - gstreamer1.0-pipewire
+          - libpipewire-0.3-0
+          - libpipewire-0.3-dev
+          - libpipewire-0.3-modules
+          - libspa-0.2-bluetooth
+          - libspa-0.2-dev
+          - libspa-0.2-jack
+          - libspa-0.2-modules
+          - pipewire-audio-client-libraries
+          - pipewire-pulse
+          - pipewire-bin
+          - pipewire-locales
+          - pipewire-tests
+          - pipewire-doc
+          - wireplumber-doc
+          - gir1.2-wp-0.4
+          - libwireplumber-0.4-0
+          - libwireplumber-0.4-dev
+        state: latest
+        update_cache: true
+- hosts: localhost
+  connection: local
+  become: off
+  tasks:
+    - name: 'Disable service pulseaudio.socket'
+      ansible.builtin.systemd:
+        name: pulseaudio.socket
+        scope: user
+        enabled: no
+        state: stopped
+        masked: yes
+    - name: 'Disable service pulseaudio.service'
+      ansible.builtin.systemd:
+        name: pulseaudio.service
+        scope: user
+        enabled: no
+        state: stopped
+        masked: yes
+    - name: Enable service pipewire-pulse.service
+      ansible.builtin.systemd:
+        name: pipewire-pulse.service
+        scope: user
+        enabled: yes
+        state: started
+        masked: no
+    - name: Enable service pipewire-pulse.socket
+      ansible.builtin.systemd:
+        name: pipewire-pulse.socket
+        scope: user
+        enabled: yes
+        state: started
+        masked: no
+    - name: Enable service wireplumber.service
+      ansible.builtin.systemd:
+        name: wireplumber.service
+        scope: user
+        enabled: yes
+        state: started
+        masked: no

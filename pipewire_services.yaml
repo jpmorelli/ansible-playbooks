@@ -1,0 +1,39 @@
+---
+- hosts: localhost
+  connection: local
+  tasks:
+    - name: 'Disable service pulseaudio.socket'
+      ansible.builtin.systemd:
+        name: pulseaudio.socket
+        scope: user
+        enabled: no
+        state: stopped
+        masked: yes
+    - name: "Disable service pulseaudio.service"
+      ansible.builtin.systemd:
+        name: pulseaudio.service
+        scope: user
+        enabled: no
+        state: stopped
+        masked: yes
+    - name: "Enable service pipewire-pulse.service"
+      ansible.builtin.systemd:
+        name: pipewire-pulse.service
+        scope: user
+        enabled: yes
+        state: started
+        masked: no
+    - name: "Enable service pipewire-pulse.socket"
+      ansible.builtin.systemd:
+        name: pipewire-pulse.socket
+        scope: user
+        enabled: yes
+        state: started
+        masked: no
+    - name: "Enable service wireplumber.service"
+      ansible.builtin.systemd:
+        name: wireplumber.service
+        scope: user
+        enabled: yes
+        state: started
+        masked: no

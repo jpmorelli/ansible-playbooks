@@ -1,0 +1,21 @@
+---
+- hosts: localhost
+  connection: local
+  become: True
+  vars:
+    myuser: juan 
+    mygroups:
+      - audio
+  tasks:
+    - name: adding secondary group(s)
+      ansible.builtin.user:
+        name: "{{ myuser }}"
+        groups: "{{ mygroups }}"
+        append: true
+    - name: 'Insert/Update audio limits configuration in /etc/security/limits.conf'
+      ansible.builtin.blockinfile:
+        path: /etc/security/limits.conf
+        block: |
+      
+          @audio        -      rtprio     95
+          @audio        -      memlock    unlimited
